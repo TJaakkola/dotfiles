@@ -1,0 +1,7 @@
+
+alias xtools=$XROAD_UTILS_HOME/docker/dev/tools/
+alias xhome=$XROAD_HOME
+alias xutils=$XROAD_UTILS_HOME
+alias xdev=$XROAD_UTILS_HOME/docker/dev
+alias xfront=$XROAD_HOME/src/proxy-ui-api/frontend
+alias xfunctions="bat ~/.dotfiles/niis/.functions"

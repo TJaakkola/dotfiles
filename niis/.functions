@@ -1,0 +1,41 @@
+
+# Print database configuration
+function xdb { docker exec -it $1 cat /etc/xroad/db.properties }
+
+# Start port forwarding ssh-connection to x-road environments
+function xbastion { ssh -D12765 bastion.x-road.rocks }
+
+# Get api key from ss1
+function xkey { 
+  docker exec -it ss1 curl -X POST -u xrd:secret https://localhost:4000/api/api-key --data '["XROAD_REGISTRATION_OFFICER","XROAD_SECURITYSERVER_OBSERVER","XROAD_SECURITY_OFFICER","XROAD_SERVICE_ADMINISTRATOR","XROAD_SYSTEM_ADMINISTRATOR"]' --header "Content-Type: application/json" -k
+}
+
+# Open database console to ss1
+function xdbc {
+  docker exec -it -u postgres ss1 bash -c "psql;"
+}
+
+# List log files in security server
+function xloglist {
+  docker exec -it ss1 ls -l /var/log/xroad
+}
+
+# Print spesific log file in security server
+function xlog {
+  docker exec -it ss1 cat /var/log/xroad/$1
+}
+
+# Run tests on proxy-ui-api
+function xtest-proxy-ui-api {
+  docker exec -it -w /home/builder/xroad/src/proxy-ui-api builder bash -c "../gradlew test -Pskip-frontend-build"
+}
+
+# Run build with checkstyle on proxy-ui-api
+function xbuild-proxy-ui-api {
+  docker exec -it -w /home/builder/xroad/src/proxy-ui-api builder bash -c "../gradlew build -Pskip-frontend-build"
+}
+
+# Print this file
+function xfunctions {
+  bat ~/.dotfiles/niis/.functions
+}

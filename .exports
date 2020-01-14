@@ -1,0 +1,6 @@
+
+
+### TOOLS ###
+
+# Bind ctrl+o to open file selected in preview in atom 
+export FZF_DEFAULT_OPTS="--bind='ctrl-o:execute(atom {})+abort'"

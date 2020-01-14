@@ -1,0 +1,6 @@
+
+alias help='tldr'
+alias copypath='pwd|pbcopy'
+alias zshconfig="atom ~/.zshrc"
+alias sshconfig="atom ~/.ssh"
+alias setJava8="export JAVA_HOME=`/usr/libexec/java_home -v 1.8`; java -version"

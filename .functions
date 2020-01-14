@@ -1,0 +1,14 @@
+
+# What process is running in port <portnumber>
+function processInPort { lsof -i :$1 }
+
+# Create flywayscript-file base on current date. Parameter for description
+function flywayScript { touch V`date +"%Y%m%d%H%M%S000"`__$1.sql}
+
+### DOCKER ###
+
+# Open bash session in docker container
+function dbash { docker exec -it $1 bash }
+
+### TOOLS ###
+alias preview="fzf --preview 'bat --color \"always\" {}'"

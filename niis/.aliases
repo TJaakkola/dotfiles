@@ -4,10 +4,10 @@ alias xhome=$XROAD_HOME
 alias xutils=$XROAD_UTILS_HOME
 alias xdev=$XROAD_UTILS_HOME/docker/dev
 alias xfront=$XROAD_HOME/src/proxy-ui-api/frontend
-alias xfunctions="bat ~/.dotfiles/niis/.functions"
 
 alias xstart='cwd="$(pwd)" && cd $XROAD_UTILS_HOME/docker/dev && docker-compose start && cd "$cwd"'
 alias xstop='cwd="$(pwd)" && cd $XROAD_UTILS_HOME/docker/dev && docker-compose stop && cd "$cwd"'
 alias xdown='cwd="$(pwd)" && cd $XROAD_UTILS_HOME/docker/dev && docker-compose down && cd "$cwd"'
-alias xup='cwd="$(pwd)" && cd $XROAD_UTILS_HOME/docker/dev/tools && ./setup_dev_containers.sh true && cd "$cwd"'
+alias xup='cwd="$(pwd)" && cd $XROAD_UTILS_HOME/docker/dev/tools && ./setup_dev_containers.sh develop && ./reload_api_ui_backend.sh && "$cwd"'
 alias xlist='cwd="$(pwd)" && cd $XROAD_UTILS_HOME/docker/dev && docker-compose ps && cd "$cwd"'
+alias xfunctions='bat ~/.dotfiles/niis/.functions | grep -B1 "function"'

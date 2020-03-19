@@ -25,14 +25,9 @@ function xlog {
   docker exec -it ss1 cat /var/log/xroad/$1
 }
 
-# Run tests on proxy-ui-api
-function xtest-proxy-ui-api {
-  docker exec -it -w /home/builder/xroad/src/proxy-ui-api builder bash -c "../gradlew test -Pskip-frontend-build"
-}
-
-# Run build with checkstyle on proxy-ui-api
-function xbuild-proxy-ui-api {
-  docker exec -it -w /home/builder/xroad/src/proxy-ui-api builder bash -c "../gradlew build -Pskip-frontend-build"
+# switch openapi3 description in kapsi-space
+function xswitch {
+  ssh etulinja@kapsi.fi 'cd sites/etulinja.kapsi.fi/www && mv example.yaml example_tmp.yaml && mv example_other.yaml example.yaml && mv example_tmp.yaml example_other.yaml'
 }
 
 # Print tail for a logfile
@@ -40,8 +35,27 @@ function xtail {
   docker exec -it ss1 tail -f /var/log/xroad/$1
 } 
 
+# Remove and recreate dev containers
+function xrecreate-containers {
+  cd $XROAD_UTILS_HOME/docker/dev && docker-compose down
+  cd $XROAD_UTILS_HOME/docker/dev/tools && ./setup_dev_containers.sh true
+}
+
+
+### PROXY-UI-API
+
+# Run tests on proxy-ui-api
+function xp-test {
+  docker exec -it -w /home/builder/xroad/src/proxy-ui-api builder bash -c "../gradlew test -Pskip-frontend-build"
+}
+
+# Build (without frontend)
+function xp-build {
+  docker exec -it -w /home/builder/xroad/src/proxy-ui-api builder bash -c "../gradlew build -Pskip-frontend-build"
+}
+
 # Configure local proxy-ui-api so that it can be run on host
-function xproxy-backend {
+function xp-host-config {
   sed -i '' 's/4100/5000/g' "$XROAD_HOME"/src/proxy-ui-api/frontend/.env.local
   sed -i '' 's/port: 4000/port: 5000/g' "$XROAD_HOME"/src/proxy-ui-api/src/main/resources/common-application.yml
   sed -i '' 's/classes.dependsOn make/\/\/classes.dependsOn make/g' "$XROAD_HOME"/src/common-util/build.gradle
@@ -49,25 +63,31 @@ function xproxy-backend {
 }
 
 # Reset local proxy-ui-api so that it is run in container
-function xproxy-backend-reset {
+function xp-host-reset {
   sed -i '' 's/5000/4100/g' "$XROAD_HOME"/src/proxy-ui-api/frontend/.env.local
   sed -i '' 's/port: 5000/port: 4000/g' "$XROAD_HOME"/src/proxy-ui-api/src/main/resources/common-application.yml
   sed -i '' 's/\/\/classes.dependsOn make/classes.dependsOn make/g' "$XROAD_HOME"/src/common-util/build.gradle
   sed -i '' 's/\/\/clean.dependsOn makeClean/clean.dependsOn makeClean/g' "$XROAD_HOME"/src/common-util/build.gradle
 }
 
-# Remove and recreate dev containers
-function xrecreate_containers {
-  cd $XROAD_UTILS_HOME/docker/dev && docker-compose down
-  cd $XROAD_UTILS_HOME/docker/dev/tools && ./setup_dev_containers.sh true
-}
-
 # Setup proxy-ui-api on host
-function xrecreate_proxy_ui_api_on_host {
+function xp-host {
+  cwd="$(pwd)"
   cd $XROAD_UTILS_HOME/docker/dev && docker-compose down
-  cd $XROAD_UTILS_HOME/docker/dev/tools/setup_proxy_ui_api_on_host.sh && xproxy-backend
+  cd $XROAD_UTILS_HOME/docker/dev/tools && ./setup_proxy_api_ui_on_host.sh 
+  ./reload_api_ui_backend.sh
+  cd "$cwd"
 }
 
-function xswitch {
-  ssh etulinja@kapsi.fi 'cd sites/etulinja.kapsi.fi/www && mv example.yaml example_tmp.yaml && mv example_other.yaml example.yaml && mv example_tmp.yaml example_other.yaml'
+# Run single test-file given as parameter
+function xp-single-test {
+  docker exec -it -w /home/builder/xroad/src/proxy-ui-api builder bash -c "../gradlew -Dtest.single=$1 -Pskip-frontend-build -xcheckstyleTest -xcheckstyleMain test"
+} 
+
+# Build and deploy proxy-ui-api backend to container
+function xp-reload {
+  cwd="$(pwd)" 
+  cd $XROAD_UTILS_HOME/docker/dev/tools
+  ./reload_api_ui_backend.sh
+  cd "$cwd"
 }

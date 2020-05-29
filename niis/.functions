@@ -1,14 +1,11 @@
 
-# Print database configuration
-function xdb { docker exec -it $1 cat /etc/xroad/db.properties }
-
-# Start port forwarding ssh-connection to x-road environments
-function xbastion { ssh -D12765 bastion.x-road.rocks }
-
-# Get api key from ss1
+# Get api key from $1
 function xkey { 
-  docker exec -it ss1 curl -X POST -u xrd:secret https://localhost:4000/api/api-key --data '["XROAD_REGISTRATION_OFFICER","XROAD_SECURITYSERVER_OBSERVER","XROAD_SECURITY_OFFICER","XROAD_SERVICE_ADMINISTRATOR","XROAD_SYSTEM_ADMINISTRATOR"]' --header "Content-Type: application/json" -k
+  docker exec -it $1 curl -X POST -u xrd:secret https://localhost:4000/api/api-keys --data '["XROAD_REGISTRATION_OFFICER","XROAD_SECURITYSERVER_OBSERVER","XROAD_SECURITY_OFFICER","XROAD_SERVICE_ADMINISTRATOR","XROAD_SYSTEM_ADMINISTRATOR"]' --header "Content-Type: application/json" -k
 }
+
+# Print database configuration (xss => xroad security server)
+function xdb { docker exec -it $1 cat /etc/xroad/db.properties }
 
 # Open database console to ss1
 function xdbc {
@@ -16,43 +13,41 @@ function xdbc {
 }
 
 # List log files in security server
-function xloglist {
-  docker exec -it ss1 ls -l /var/log/xroad
+function xlogs {
+  docker exec -it $1 ls -l /var/log/xroad
 }
 
 # Print spesific log file in security server
 function xlog {
-  docker exec -it ss1 cat /var/log/xroad/$1
-}
-
-# switch openapi3 description in kapsi-space
-function xswitch {
-  ssh etulinja@kapsi.fi 'cd sites/etulinja.kapsi.fi/www && mv example.yaml example_tmp.yaml && mv example_other.yaml example.yaml && mv example_tmp.yaml example_other.yaml'
+  docker exec -it $1 cat /var/log/xroad/$2
 }
 
 # Print tail for a logfile
 function xtail {
-  docker exec -it ss1 tail -f /var/log/xroad/$1
+  docker exec -it $1 tail -f /var/log/xroad/$2
 } 
 
-# Remove and recreate dev containers
-function xrecreate-containers {
-  cd $XROAD_UTILS_HOME/docker/dev && docker-compose down
-  cd $XROAD_UTILS_HOME/docker/dev/tools && ./setup_dev_containers.sh true
+# Build images (optionally), start containers, restore backup and reload proxy-ui-api
+function xup {
+  cwd="$(pwd)"
+  cd $XROAD_UTILS_HOME/docker/dev/tools
+  ./setup_dev_containers.sh develop
+  ./reload_api_ui_backend.sh ss1
+  "$cwd"
 }
 
+# Setup SS2
+function xup-ss2 {
+  cwd="$(pwd)"
+  cd "$XROAD_UTILS_HOME"/docker/dev && docker-compose -f docker-compose.yml -f docker-compose.develop-packages.yml up --detach ss2
+  cd utils
+  ./init_dev_security_server.sh ss2 true
+  cd ../tools
+  ./reload_api_ui_backend.sh ss2
+  cd "$cwd"
+}
 
 ### PROXY-UI-API
-
-# Run tests on proxy-ui-api
-function xp-test {
-  docker exec -it -w /home/builder/xroad/src/proxy-ui-api builder bash -c "../gradlew test -Pskip-frontend-build"
-}
-
-# Build (without frontend)
-function xp-build {
-  docker exec -it -w /home/builder/xroad/src/proxy-ui-api builder bash -c "../gradlew build -Pskip-frontend-build"
-}
 
 # Configure local proxy-ui-api so that it can be run on host
 function xp-host-config {
@@ -88,6 +83,11 @@ function xp-single-test {
 function xp-reload {
   cwd="$(pwd)" 
   cd $XROAD_UTILS_HOME/docker/dev/tools
-  ./reload_api_ui_backend.sh
+  ./reload_api_ui_backend.sh $1
   cd "$cwd"
+}
+
+# switch openapi3 description in kapsi-space
+function x-test-switch {
+  ssh etulinja@kapsi.fi 'cd sites/etulinja.kapsi.fi/www && mv example.yaml example_tmp.yaml && mv example_other.yaml example.yaml && mv example_tmp.yaml example_other.yaml'
 }

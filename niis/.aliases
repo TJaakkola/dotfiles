@@ -5,23 +5,12 @@ alias xhome=$XROAD_HOME
 alias xutils=$XROAD_UTILS_HOME
 alias xdev=$XROAD_UTILS_HOME/docker/dev
 alias xfront=$XROAD_HOME/src/proxy-ui-api/frontend
+alias xadmin=$XROAD_HOME/src/centralserver/admin-ui
+alias xshared=$XROAD_HOME/src/shared-ui/
 
-# Container shortcuts (xd => xroad docker)
-alias xstart='cwd="$(pwd)" && cd $XROAD_UTILS_HOME/docker/dev && docker-compose start && cd "$cwd"'
-alias xstop='cwd="$(pwd)" && cd $XROAD_UTILS_HOME/docker/dev && docker-compose stop && cd "$cwd"'
-alias xdown='cwd="$(pwd)" && cd $XROAD_UTILS_HOME/docker/dev && docker-compose down && cd "$cwd"'
 alias xps='cwd="$(pwd)" && cd $XROAD_UTILS_HOME/docker/dev && docker-compose ps && cd "$cwd"'
-
-# Building (xp => xroad proxy)
-alias xp-test='docker exec -it -w /home/builder/xroad/src/proxy-ui-api builder bash -c "../gradlew test -Pskip-frontend-build"'
-alias xp-build-backend='docker exec -it -w /home/builder/xroad/src/proxy-ui-api builder bash -c "../gradlew build -Pskip-frontend-build"'
-alias xp-build='docker exec -it -w /home/builder/xroad/src/proxy-ui-api builder bash -c "../gradlew build"'
-alias xp-build-frontend='docker exec -it -w /home/builder/xroad/src/proxy-ui-api builder bash -c "../gradlew buildFront"'
-
-# Help
-alias xhelp='bat ~/.dotfiles/niis/.functions | grep -B1 "function"'
 
 ### AWS 
 
  # Start port forwarding ssh-connection to x-road environments 
-alias x-aws-proxy='ssh -D12765 bastion.x-road.rocks'
+alias xproxy='ssh -D12765 bastion.x-road.rocks'

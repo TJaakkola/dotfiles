@@ -9,6 +9,3 @@ function flywayScript { touch V`date +"%Y%m%d%H%M%S000"`__$1.sql}
 
 # Open bash session in docker container
 function dbash { docker exec -it $1 bash }
-
-### TOOLS ###
-alias preview="fzf --preview 'bat --color \"always\" {}'"

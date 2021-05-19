@@ -1,7 +1,13 @@
 
 # Get api key from $1
 function xkey { 
-  docker exec -it $1 curl -X POST -u xrd:secret https://localhost:4000/api/api-keys --data '["XROAD_REGISTRATION_OFFICER","XROAD_SECURITYSERVER_OBSERVER","XROAD_SECURITY_OFFICER","XROAD_SERVICE_ADMINISTRATOR","XROAD_SYSTEM_ADMINISTRATOR"]' --header "Content-Type: application/json" -k
+  docker exec -it $1 curl -X POST -u xrd:secret https://localhost:4000/api/v1/api-keys --data '["XROAD_REGISTRATION_OFFICER","XROAD_SECURITYSERVER_OBSERVER","XROAD_SECURITY_OFFICER","XROAD_SERVICE_ADMINISTRATOR","XROAD_SYSTEM_ADMINISTRATOR"]' --header "Content-Type: application/json" -k
+}
+
+# Print available functions and aliases for dockerized xroad tooling
+function xhelp {
+  bat ~/.dotfiles/niis/.functions | grep -B1 "function"
+  bat ~/.dotfiles/niis/.aliases | grep -B1 "alias"
 }
 
 # Print database configuration (xss => xroad security server)
@@ -9,7 +15,7 @@ function xdb { docker exec -it $1 cat /etc/xroad/db.properties }
 
 # Open database console to ss1
 function xdbc {
-  docker exec -it -u postgres ss1 bash -c "psql;"
+  docker exec -it -u postgres $1 bash -c "psql;"
 }
 
 # List log files in security server
@@ -26,26 +32,6 @@ function xlog {
 function xtail {
   docker exec -it $1 tail -f /var/log/xroad/$2
 } 
-
-# Build images (optionally), start containers, restore backup and reload proxy-ui-api
-function xup {
-  cwd="$(pwd)"
-  cd $XROAD_UTILS_HOME/docker/dev/tools
-  ./setup_dev_containers.sh develop
-  ./reload_api_ui_backend.sh ss1
-  "$cwd"
-}
-
-# Setup SS2
-function xup-ss2 {
-  cwd="$(pwd)"
-  cd "$XROAD_UTILS_HOME"/docker/dev && docker-compose -f docker-compose.yml -f docker-compose.develop-packages.yml up --detach ss2
-  cd utils
-  ./init_dev_security_server.sh ss2 true
-  cd ../tools
-  ./reload_api_ui_backend.sh ss2
-  cd "$cwd"
-}
 
 ### PROXY-UI-API
 
@@ -74,20 +60,7 @@ function xp-host {
   cd "$cwd"
 }
 
-# Run single test-file given as parameter
-function xp-single-test {
-  docker exec -it -w /home/builder/xroad/src/proxy-ui-api builder bash -c "../gradlew -Dtest.single=$1 -Pskip-frontend-build -xcheckstyleTest -xcheckstyleMain test"
-} 
-
-# Build and deploy proxy-ui-api backend to container
-function xp-reload {
-  cwd="$(pwd)" 
-  cd $XROAD_UTILS_HOME/docker/dev/tools
-  ./reload_api_ui_backend.sh $1
-  cd "$cwd"
-}
-
-# switch openapi3 description in kapsi-space
-function x-test-switch {
-  ssh etulinja@kapsi.fi 'cd sites/etulinja.kapsi.fi/www && mv example.yaml example_tmp.yaml && mv example_other.yaml example.yaml && mv example_tmp.yaml example_other.yaml'
+# Kill chromedriver
+function xkillchromedriver {
+  kill $(lsof -i :9515 | awk 'FNR == 2 {print $2}')
 }
